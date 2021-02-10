@@ -52,7 +52,7 @@ class Game:
         self.buttons = []
         for row in range(rows_count):
             for col in range(cols_count):
-                b = Button(self.window, height=1, width=1,
+                b = Button(self.window, height=1, width=2,
                         command = lambda row=row, col=col:
                             self.try_fill(row, col))
                 b.grid(row = row, column = col)
