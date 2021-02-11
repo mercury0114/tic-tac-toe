@@ -1,5 +1,5 @@
+import alpha_beta_opponent
 import tic_tac_game
-import opponent
 import sys
 
 def PrintUsageAndExit():
@@ -11,6 +11,8 @@ def PrintUsageAndExit():
 ROWS_COUNT = 15
 COLS_COUNT = 15
 K = 5
+
+# Parsing command line arguments
 if len(sys.argv) == 2:
     PrintUsageAndExit()
 if len(sys.argv) >= 3:
@@ -21,6 +23,7 @@ if (len(sys.argv) == 4):
 if (len(sys.argv) > 4):
     PrintUsageAndExit()
 
-opponent = opponent.Opponent(K)
+# Starting the game
+opponent = alpha_beta_opponent.AlphaBetaOpponent(K)
 game = tic_tac_game.Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()
