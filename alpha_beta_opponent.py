@@ -13,7 +13,7 @@ def AdjacentCount(board, row, col):
         r = row + direction[0]
         c = col + direction[1]
         if (r >= 0 and r < len(board) and c >= 0 and c < len(board[0])
-            and board[r][c] != tic_tac_game.EMPTY):
+            and board[r][c] != utils.EMPTY):
             count += 1
     return count
         
@@ -30,14 +30,14 @@ class AlphaBetaOpponent:
         moves = []
         for row in range(len(board)):
             for col in range(len(board[0])):
-                if board[row][col] == tic_tac_game.EMPTY:
+                if board[row][col] == utils.EMPTY:
                     adjacent_count = AdjacentCount(board, row, col)
                     if adjacent_count:
                         board[row][col] = turn
                         consecutive_count = utils.ConsecutiveCount(board, row, col)
                         board[row][col] = -turn
                         block_count = utils.ConsecutiveCount(board, row, col)
-                        board[row][col] = tic_tac_game.EMPTY
+                        board[row][col] = utils.EMPTY
                         score = WIN_SCORE if consecutive_count == self.k else \
                             block_count ** 3 + consecutive_count ** 2 + adjacent_count
                         moves.append((score, row, col))
@@ -59,7 +59,7 @@ class AlphaBetaOpponent:
         for row, col in self.candidate_moves(board, turn):
             board[row][col] = turn
             alpha = max(alpha, -self.alpha_beta(board, -beta, -alpha, depth+1, -turn, row, col))
-            board[row][col] = tic_tac_game.EMPTY
+            board[row][col] = utils.EMPTY
             if alpha >= beta:
                 return beta
         return alpha
@@ -70,15 +70,15 @@ class AlphaBetaOpponent:
         
         best_score = -WIN_SCORE
         best_row, best_col = -1, -1
-        candidate_moves = self.candidate_moves(board, tic_tac_game.OPPONENT_TURN)
+        candidate_moves = self.candidate_moves(board, utils.OPPONENT_TURN)
         moves_checked = 0
         for row, col in candidate_moves:
             window.title("Please wait, {}/{} checked".format(moves_checked, len(candidate_moves)))
             
-            board[row][col] = tic_tac_game.OPPONENT_TURN
+            board[row][col] = utils.OPPONENT_TURN
             new_score = -self.alpha_beta(board, -WIN_SCORE, WIN_SCORE,
-                1, tic_tac_game.MY_TURN, row, col)
-            board[row][col] = tic_tac_game.EMPTY
+                1, utils.MY_TURN, row, col)
+            board[row][col] = utils.EMPTY
             
             print("Score for ", row, col, "is", new_score)
             if new_score > best_score or best_row == -1:

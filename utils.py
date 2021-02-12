@@ -1,3 +1,9 @@
+import itertools
+
+MY_TURN = -1
+OPPONENT_TURN = 1
+EMPTY = 0
+
 def PlyCount(board):
     count = 0
     for row in range(len(board)):
@@ -30,3 +36,16 @@ def ConsecutiveCount(board, row, col):
             next_col -= direction[1]
         max_count = max(max_count, 1 + forward_count + backward_count)
     return max_count
+
+def AvailableMoves(board):
+    moves = []
+    for row, col in itertools.product(range(len(board)), range(len(board[0]))):
+        if board[row][col] == EMPTY:
+            moves.append((row, col))
+    return moves
+
+# returns -1 if I won, 0 if game continues, 1 if opponent won
+def GameWon(board, last_row, last_col, k):
+    if last_row == -1:
+        return 0
+    return (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
