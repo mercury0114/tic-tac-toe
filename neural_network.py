@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Dense
 from keras.models import Sequential
+from keras.callbacks import ModelCheckpoint
 import utils
 import itertools
 import random
@@ -13,11 +14,11 @@ def Flatten(board):
 
 def ConstructNetwork(rows_count, cols_count):
     network = Sequential()
-    network.add(Dense(64, activation = "relu",
+    network.add(Dense(64, activation = "tanh",
                         input_dim = rows_count * cols_count))
-    network.add(Dense(64, activation = "relu"))
-    network.add(Dense(1, activation = "tanh"))
-    network.compile(optimizer='adam', loss='mse', metrics='mse')
+    network.add(Dense(64, activation = "tanh"))
+    network.add(Dense(1, activation="tanh"))
+    network.compile(optimizer='adam', loss='mse', metrics=['mse'])
     return network
 
 def SimulateGamePlay(network, rows_count, cols_count, k):
@@ -53,7 +54,7 @@ def SimulateGamePlay(network, rows_count, cols_count, k):
         ply_count += 1
         
         game_history.append(Flatten(board))
-    return game_history, [utils.GameWon(board, last_row, last_col, k) for _ in game_history]
+    return game_history, utils.GameWon(board, last_row, last_col, k)
 
 def ExamplePredict():
     network = ConstructNetwork(3, 3)
@@ -68,16 +69,29 @@ def ExamplePlay():
 
 def TrainNetwork(rows_count, cols_count, k):
     network = ConstructNetwork(rows_count, cols_count)
-    for network_update_iteration in range(1000):
+    for network_update_iteration in range(100):
         print("iteration: ", network_update_iteration)
-        allX, allY = [], []
-        for i in range(100):
-            print(i)
-            gameX, gameY = SimulateGamePlay(network, rows_count, cols_count, k)
-            for X, y in zip(gameX, gameY):
-                allX.append(X)
-                allY.append(y)
-        # TODO: implement backpropogation
+        scores = {}
+        counts = {}
+        for game_nr in range(50):
+            print("Iteration {}, game_nr: {}".format(network_update_iteration, game_nr))
+            game_history, score = SimulateGamePlay(network, rows_count, cols_count, k)
+            for position in game_history:
+                position_str = str(position)
+                scores.setdefault(position_str, 0)
+                scores[position_str] += score
+                counts.setdefault(position_str, 0)
+                counts[position_str] += 1
+        X = []
+        y = []
+        for position_str in scores:
+            X.append(eval(position_str))
+            y.append(scores[position_str] / counts[position_str])
+        checkPoint = ModelCheckpoint("data/intermediate_best_network", verbose=1,
+                                     monitor='val_loss', mode='min', save_best_only=True)
+        network.fit(np.array(X), np.array(y),
+                    validation_split=0.3, batch_size = 10, epochs=500, callbacks=[checkPoint])
+    network.save("data/final_network")
     return network
     
 
