@@ -69,11 +69,11 @@ def ExamplePlay():
 
 def TrainNetwork(rows_count, cols_count, k):
     network = ConstructNetwork(rows_count, cols_count)
-    for network_update_iteration in range(100):
+    for network_update_iteration in range(80):
         print("iteration: ", network_update_iteration)
         scores = {}
         counts = {}
-        for game_nr in range(50):
+        for game_nr in range(300):
             print("Iteration {}, game_nr: {}".format(network_update_iteration, game_nr))
             game_history, score = SimulateGamePlay(network, rows_count, cols_count, k)
             for position in game_history:
@@ -90,7 +90,7 @@ def TrainNetwork(rows_count, cols_count, k):
         checkPoint = ModelCheckpoint("data/intermediate_best_network", verbose=1,
                                      monitor='val_loss', mode='min', save_best_only=True)
         network.fit(np.array(X), np.array(y),
-                    validation_split=0.3, batch_size = 10, epochs=500, callbacks=[checkPoint])
+                    validation_split=0.3, batch_size = 10, epochs=300, callbacks=[checkPoint])
     network.save("data/final_network")
     return network
     
