@@ -1,6 +1,7 @@
 import alpha_beta_opponent
 import tic_tac_game
 import sys
+from neural_network import NeuralNetworkOpponent
 
 def PrintUsageAndExit():
     print("python3 main.py [ROWS_COUNT] [COLS_COUNT] [K]")
@@ -24,6 +25,7 @@ if (len(sys.argv) > 4):
     PrintUsageAndExit()
 
 # Starting the game
-opponent = alpha_beta_opponent.AlphaBetaOpponent(K)
+#opponent = alpha_beta_opponent.AlphaBetaOpponent(K)
+opponent = NeuralNetworkOpponent(ROWS_COUNT, COLS_COUNT, "data/final_network")
 game = tic_tac_game.Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()
