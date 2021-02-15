@@ -68,11 +68,11 @@ def ExamplePlay():
 def TrainNetwork(rows_count, cols_count, k):
     network = ConstructNetwork(rows_count, cols_count)
     best_val_loss = 1000
-    for network_update_iteration in range(10):
+    for network_update_iteration in range(100):
         print("iteration: ", network_update_iteration)
         scores = {}
         counts = {}
-        for game_nr in range(30):
+        for game_nr in range(500):
             print("Iteration {}, game_nr: {}".format(network_update_iteration, game_nr))
             game_history, score = SimulateGamePlay(network, rows_count, cols_count, k)
             for position in game_history:
@@ -86,9 +86,9 @@ def TrainNetwork(rows_count, cols_count, k):
         for position_str in scores:
             X.append(eval(position_str))
             y.append(scores[position_str] / counts[position_str])
-        earlyStopper = EarlyStopping(monitor='val_loss', patience=25, verbose=1)    
+        earlyStopper = EarlyStopping(monitor='val_loss', patience=50, verbose=1)    
         fit_results = network.fit(np.array(X), np.array(y),
-                    validation_split=0.3, batch_size = 10, epochs=100,
+                    validation_split=0.3, batch_size = 10, epochs=500,
                     callbacks=[earlyStopper])
         if fit_results.history['val_loss'][-1] < best_val_loss:
             best_val_loss = fit_results.history['val_loss'][-1]
@@ -114,3 +114,5 @@ class NeuralNetworkOpponent:
         _, best_row, best_col = scores[0]
         print(best_row, best_col)
         return best_row, best_col
+
+TrainNetwork(3,3,3)
