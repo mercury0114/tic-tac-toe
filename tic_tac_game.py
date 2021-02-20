@@ -33,7 +33,7 @@ class Game:
             for col in range(cols_count):
                 b = Button(self.window, height=1, width=2,
                         command = lambda row=row, col=col:
-                            self.try_make_move(row, col))
+                            self.make_my_move(row, col))
                 b.grid(row = row, column = col)
                 self.buttons.append(b)
 
@@ -62,6 +62,10 @@ class Game:
             print()
 
     # doesn't change the board state if the move is illegal or the game has ended
+    def make_my_move(self, row, col):
+        if (self.current_turn == utils.MY_TURN):
+            self.try_make_move(row, col)
+
     def try_make_move(self, row, col):
         # updating board
         if not self.game_won() and self.board[row][col] == utils.EMPTY:
