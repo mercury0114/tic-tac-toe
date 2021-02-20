@@ -1,8 +1,14 @@
 import itertools
+import numpy as np
 
 MY_TURN = -1
 OPPONENT_TURN = 1
 EMPTY = 0
+
+def Flatten(board):
+    arr = np.array(board)
+    #return np.array([arr == -1, arr == 0, arr == 1]).tolist()
+    return np.ndarray.flatten(np.array(board)).tolist()
 
 def PlyCount(board):
     count = 0
@@ -43,6 +49,26 @@ def AvailableMoves(board):
         if board[row][col] == EMPTY:
             moves.append((row, col))
     return moves
+
+def AdjacentCount(board, row, col):
+    count = 0
+    directions = [[-1,-1], [-1, 0], [-1, 1], [0, -1], [0,1], [1, -1], [1, 0], [1, 1]]
+    for direction in directions:
+        r = row + direction[0]
+        c = col + direction[1]
+        if (r >= 0 and r < len(board) and c >= 0 and c < len(board[0])
+            and board[r][c] != EMPTY):
+            count += 1
+    return count
+
+def CandidateMoves(board):
+    moves = []
+    for row in range(len(board)):
+        for col in range(len(board[0])):
+            if board[row][col] == EMPTY and AdjacentCount(board, row, col):
+                moves.append((row, col))
+    return moves
+                
 
 # returns -1 if I won, 0 if game continues, 1 if opponent won
 def GameWon(board, last_row, last_col, k):
