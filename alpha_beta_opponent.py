@@ -1,6 +1,5 @@
-import tic_tac_game
-import numpy
-from utils import AdjacentCount, PlyCount, ConsecutiveCount, EMPTY, MY_TURN, OPPONENT_TURN
+from utils import AdjacentCount, PlyCount, CandidateMoves, ConsecutiveCount
+from utils import EMPTY, MY_TURN, OPPONENT_TURN
 
 WIN_SCORE = 10000
 DEPTH = 7
@@ -10,24 +9,19 @@ class AlphaBetaOpponent:
     def __init__(self, k):
         self.k = k
 
-    def evaluate(self, board):
-        return tic_tac_game.GameEnded(board, self.k) * WIN_SCORE
-
     def candidate_moves(self, board, turn):
         moves = []
-        for row in range(len(board)):
-            for col in range(len(board[0])):
-                if board[row][col] == EMPTY:
-                    adjacent_count = AdjacentCount(board, row, col)
-                    if adjacent_count:
-                        board[row][col] = turn
-                        consecutive_count = ConsecutiveCount(board, row, col)
-                        board[row][col] = -turn
-                        block_count = ConsecutiveCount(board, row, col)
-                        board[row][col] = EMPTY
-                        score = WIN_SCORE if consecutive_count == self.k else \
-                            block_count ** 3 + consecutive_count ** 2 + adjacent_count
-                        moves.append((score, row, col))
+        for row, col in CandidateMoves(board):
+            adjacent_count = AdjacentCount(board, row, col)
+            if adjacent_count:
+                board[row][col] = turn
+                consecutive_count = ConsecutiveCount(board, row, col)
+                board[row][col] = -turn
+                block_count = ConsecutiveCount(board, row, col)
+                board[row][col] = EMPTY
+                score = WIN_SCORE if consecutive_count == self.k else \
+                    block_count ** 3 + consecutive_count ** 2
+                moves.append((score, row, col))
         moves.sort(reverse=True)            
         return [(row,col) for (_, row, col) in moves][:BREADTH]
 
@@ -41,6 +35,7 @@ class AlphaBetaOpponent:
         
         # Stop search here, returning heuristic position evaluation
         if depth == DEPTH:
+            # TODO(mariusl): return a better heuristic
             return -consecutive_count
         
         for row, col in self.candidate_moves(board, turn):

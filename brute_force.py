@@ -41,13 +41,8 @@ def Solve3By3():
 
 def TrainOptimal3By3Network():
     X, y = Solve3By3()
-    train_size = len(X) // 2
-    print("Train size: ", train_size)
-    
     network = neural_network.ConstructDenseNetwork(3, 3)
-    network.fit(np.array(X[:train_size]), np.array(y[:train_size]),
+    network.fit(np.array(X]), np.array(y),
                 validation_split = 0.2, batch_size=10, epochs=200)
     network.save("data/optimal_3_by_3_network")
     return network
-
-network = TrainOptimal3By3Network()

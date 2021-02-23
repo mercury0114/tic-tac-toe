@@ -10,6 +10,15 @@ def Flatten(board):
     #return np.array([arr == -1, arr == 0, arr == 1]).tolist()
     return np.ndarray.flatten(np.array(board)).tolist()
 
+def BestMove(board, network, turn, moves):
+    X = []
+    for row, col in moves:
+        board[row][col] = turn
+        X.append(Flatten(board))
+        board[row][col] = EMPTY
+    y = network.predict(X) * turn
+    return moves[np.argmax(y)]
+
 def PlyCount(board):
     count = 0
     for row in range(len(board)):
@@ -67,6 +76,8 @@ def CandidateMoves(board):
         for col in range(len(board[0])):
             if board[row][col] == EMPTY and AdjacentCount(board, row, col):
                 moves.append((row, col))
+    if not moves:
+        moves.append((len(board) // 2, len(board[0]) // 2))
     return moves
                 
 
