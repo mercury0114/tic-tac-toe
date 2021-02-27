@@ -50,26 +50,25 @@ def ConstructConvolutionalNetwork(rows_count, cols_count):
     network.compile(optimizer='adam', loss='mse', metrics=['mse'])
     return network
 
-def UpdateTrainingData(all_counts, all_scores, new_counts, new_scores):
-    for position_str in new_counts:
-        all_counts[position_str] = new_counts[position_str]
-        all_scores[position_str] = new_scores[position_str]
+def CreateTrainingData(counts, scores):
     X, y = [], []
-    for position_str in all_counts:
-        if (all_counts[position_str] > 4):
+    for position_str in counts:
+        if (counts[position_str] > 4):
             X.append(Flatten(eval(position_str)))
-            y.append(all_scores[position_str] / all_counts[position_str])
+            y.append(scores[position_str] / counts[position_str])
     return np.array(X), np.array(y)
 
 def TrainNetwork(rows_count, cols_count, k):
     network = ConstructDenseNetwork(rows_count, cols_count)
-    opponent = MonteCarloOpponent(rows_count, cols_count, k, 1000000)
+    opponent = MonteCarloOpponent(rows_count, cols_count, k, 400000)
     initial_board = [[0 for _ in range(cols_count)] for _ in range(rows_count)]
-    new_counts, new_scores = opponent.GetCountsAndScores(initial_board, MY_TURN)
-    X, y = UpdateTrainingData({}, {}, new_counts, new_scores)
-    earlyStopper = EarlyStopping(monitor='val_loss', patience=200, verbose=1)
+    counts, scores = opponent.GetCountsAndScores(initial_board, MY_TURN)
+    print("Creating training data")
+    X, y = CreateTrainingData(counts, scores)
+    print("Training a network with sample size", len(X))
+    earlyStopper = EarlyStopping(monitor='val_loss', patience=30, verbose=1)
     fit_results = network.fit(X, y,
-                validation_split=0.2, batch_size = 10, epochs=5000,
+                validation_split=0.2, batch_size = 10, epochs=200,
                 callbacks=[earlyStopper])
     network.save("data/final_network")
     return network
