@@ -111,4 +111,4 @@ def ConvertToTrainingData(counts, scores):
     for position_str in counts:
         X.append(eval(position_str))
         y.append(scores[position_str] / counts[position_str])
-    return X, y
+    return np.array(X), np.array(y)
