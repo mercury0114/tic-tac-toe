@@ -5,6 +5,9 @@ MY_TURN = -1
 OPPONENT_TURN = 1
 EMPTY = 0
 
+def InitialBoard(rows_count, cols_count):
+    return [[0 for _ in range(rows_count)] for _ in range(cols_count)]
+
 def Flatten(board):
     arr = np.array(board)
     #return np.array([arr == -1, arr == 0, arr == 1]).tolist()
@@ -70,11 +73,17 @@ def AdjacentCount(board, row, col):
             count += 1
     return count
 
-def CandidateMoves(board):
+def CandidateMoves(board, turn = None, k = None):
     moves = []
     for row in range(len(board)):
         for col in range(len(board[0])):
             if board[row][col] == EMPTY and AdjacentCount(board, row, col):
+                if turn is not None:
+                    board[row][col] = turn
+                    count = ConsecutiveCount(board, row, col)
+                    board[row][col] = EMPTY
+                    if (k is not None and count == k):
+                        return [(row, col)]
                 moves.append((row, col))
     if not moves:
         moves.append((len(board) // 2, len(board[0]) // 2))
@@ -86,3 +95,20 @@ def GameWon(board, last_row, last_col, k):
     if last_row == -1:
         return 0
     return (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
+
+def GameEnded(board, last_row, last_col, k, ply_count):
+    if last_row == -1:
+        return None
+    score = (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
+    if score:
+        return score
+    if ply_count < len(board) * len(board[0]):
+        return None
+    return 0
+
+def ConvertToTrainingData(counts, scores):
+    X, y = [], []
+    for position_str in counts:
+        X.append(eval(position_str))
+        y.append(scores[position_str] / counts[position_str])
+    return X, y

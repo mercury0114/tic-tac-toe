@@ -5,7 +5,7 @@ from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping
 from monte_carlo import MonteCarloOpponent
 from utils import MY_TURN, EMPTY, OPPONENT_TURN
-from utils import GameWon, Flatten, AvailableMoves
+from utils import GameWon, Flatten, CandidateMoves, PlyCount
 import itertools
 import random
 import copy
@@ -72,19 +72,30 @@ def TrainNetwork(rows_count, cols_count, k):
                 callbacks=[earlyStopper])
     network.save("data/final_network")
     return network
-    
+
+def ScoreMoves(network, board, turn, ply_count, moves):
+    X = []
+    for row, col in moves:
+        board[row][col] = turn
+        X.append(Flatten(board))
+        board[row][col] = EMPTY
+    y = (network.predict(X) + 1) ** 5
+    return Flatten(y / sum(y))
     
 class NeuralNetworkOpponent:
-    def __init__(self, rows_count, cols_count, model_file):
+    def __init__(self, rows_count, cols_count, k, model_file):
         self.rows_count = rows_count
         self.cols_count = cols_count
+        self.k = k
         self.network = load_model(model_file)
 
     def find_move(self, board, window):
         scores = []
-        for row,col in AvailableMoves(board):
+        for row,col in CandidateMoves(board):
             board[row][col] = OPPONENT_TURN
-            score = self.network.predict([Flatten(board)])[0][0]
+            score = GameWon(board, row, col, self.k)
+            if (not score and PlyCount(board) < self.rows_count * self.cols_count):
+                score = self.network.predict([Flatten(board)])[0][0]
             scores.append((score, row, col))
             board[row][col] = EMPTY
         scores.sort(reverse=True)

@@ -29,10 +29,9 @@ def UpdateStatistics(game, counts, scores, score):
         scores[position_str] += score
 
 class MonteCarloOpponent:
-    def __init__(self, rows_count, cols_count, k, simulation_count, network = None):
+    def __init__(self, rows_count, cols_count, k, simulation_count):
         self.rows_count, self.cols_count = rows_count, cols_count
         self.k, self.simulation_count = k, simulation_count
-        self.network = network
 
     def FinishGame(self, starting_position, last_row, last_col,
                            ply_count, turn):
@@ -42,8 +41,6 @@ class MonteCarloOpponent:
         while not GameWon(board, last_row, last_col, self.k) and \
                 ply_count < self.rows_count * self.cols_count:
             last_row, last_col = moves[-1]
-            if self.network:
-                last_row, last_col = BestMove(board, self.network, turn, moves)
             board[last_row][last_col] = turn
             turn = -turn
             ply_count += 1
@@ -69,8 +66,6 @@ class MonteCarloOpponent:
         expanded = set()
         ply_count = PlyCount(board)
         for simulation_nr in range(self.simulation_count):
-            if (simulation_nr % (10) == 0):
-                print("simulation_nr", simulation_nr)
             turn = original_turn
             row, col = -1, -1
             extra_plies = 0
@@ -95,6 +90,7 @@ class MonteCarloOpponent:
             board[row][col] = OPPONENT_TURN
             best.append((counts[str(board)], row, col))
             board[row][col] = EMPTY
+        print(best)
         _, best_row, best_col = max(best)    
         return best_row, best_col
 
