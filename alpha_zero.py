@@ -1,4 +1,5 @@
 from neural_network import ConstructDenseNetwork, ScoreMoves
+from monte_carlo import MonteCarloTreeSearch
 from utils import CandidateMoves, Flatten, GameEnded, InitialBoard, ConvertToTrainingData
 from utils import PlyCount
 from utils import EMPTY, MY_TURN, OPPONENT_TURN
@@ -30,8 +31,8 @@ def PlayOneGame(players, rows_count, cols_count, k):
 def PlaysBetter(new_network, best_network, rows_count, cols_count, k):
     print("Checking who plays better")
     score = 0
-    new_player = MonteCarloTreeSearch(rows_count, cols_count, k, NeuralNetworkPredictor(new_network))
-    best_player = MonteCarloTreeSearch(rows_count, cols_count, k, NeuralNetworkPredictor(best_network))
+    new_player = MonteCarloOpponent(rows_count, cols_count, k, NeuralNetworkPredictor(new_network))
+    best_player = MonteCarloOpponent(rows_count, cols_count, k, NeuralNetworkPredictor(best_network))
     
     players = {MY_TURN : new_player, OPPONENT_TURN : best_player}
     for game_nr in range(EPISODES_COUNT // 2):
@@ -53,75 +54,6 @@ class NeuralNetworkPredictor:
 
     def predict(self, board, last_row, last_col, ply_count):
         return self.network.predict([Flatten(board)])
-
-class MonteCarloTreeSearch:
-    def __init__(self, rows_count, cols_count, k, predictor):
-        self.rows_count, self.cols_count = rows_count, cols_count
-        self.k = k
-        self.predictor = predictor
-        self.Q, self.N = {}, {}
-
-    def clear_tables(self):
-        self.Q.clear()
-        self.N.clear()
-
-    def search(self, board, last_row, last_col, turn, ply_count):
-        score = GameEnded(board, last_row, last_col, self.k, ply_count)
-        if score is not None:
-            return score
-        
-        initial_board_str = str(board)
-        if initial_board_str not in self.Q:
-            self.Q[initial_board_str] = self.predictor.predict(board, last_row, last_col, ply_count)
-            self.N[initial_board_str] = 1 
-            return self.Q[initial_board_str]
-
-        logN = log(self.N[initial_board_str])
-        scores = []
-        moves = CandidateMoves(board, turn, self.k)
-        for row, col in moves:
-            board[row][col] = turn
-            board_str = str(board)
-            board[row][col] = EMPTY
-            q = 0 if (not board_str in self.Q) else self.Q[board_str]
-            n = 1 if (not board_str in self.N) else self.N[board_str]
-            scores.append(q * turn + sqrt(logN / n))
-
-        best_row, best_col = moves[argmax(scores)]     
-        board[best_row][best_col] = turn
-        v = self.search(board, best_row, best_col, -turn, ply_count + 1)
-        self.Q[initial_board_str] = (self.N[initial_board_str] * self.Q[initial_board_str] \
-                                         + v) / (self.N[initial_board_str] + 1)
-        self.N[initial_board_str] += 1
-        return v
-
-    def find_move(self, board, window = None):
-        ply_count = PlyCount(board)
-        turn = MY_TURN if ply_count % 2 == 0 else OPPONENT_TURN
-        moves = CandidateMoves(board, turn, self.k)
-        if len(moves) == 1:
-            return moves[0]
-        for iteration in range(SIMULATION_COUNT):
-            if window:
-                window.title("Please wait, {}/{} checked".format(iteration,
-                                                                 len(SIMULATION_COUNT)))
-            self.search(deepcopy(board), -1, -1, turn, ply_count)
-        moves, weights = self.getMovesAndWeights(board, turn)
-        row, col = choices(moves, weights=weights)[0]
-        return row, col
-
-    def getMovesAndWeights(self, board, turn):
-        pi = []
-        moves = CandidateMoves(board, turn, self.k)
-        for row, col in moves:
-            board[row][col] = turn
-            board_str = str(board)
-            board[row][col] = EMPTY
-            if board_str in self.N:
-                pi.append(self.N[board_str])
-            else:
-                pi.append(0)
-        return moves, pi
 
 def ExecuteEpisode(mcts):
     X = []
@@ -158,8 +90,8 @@ def TrainNetwork(rows_count, cols_count, k):
     counts, rewards = {}, {}
     for train_iteration in range(TRAIN_ITERATIONS_COUNT):
         print("Train iteration: ", train_iteration)
-        mcts = MonteCarloTreeSearch(rows_count, cols_count, k, predictor)
-        X, y = GatherMoreTrainingData(mcts, counts, rewards)
+        monte_carlo = MonteCarloOpponent(rows_count, cols_count, k, predictor)
+        X, y = GatherMoreTrainingData(monte_carlo, counts, rewards)
         new_network = ConstructDenseNetwork(rows_count, cols_count)
         new_network.fit(X, y, epochs=200, validation_split=0.2)
         if PlaysBetter(new_network, predictor.network, rows_count, cols_count, k):
