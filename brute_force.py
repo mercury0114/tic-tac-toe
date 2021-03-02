@@ -1,12 +1,12 @@
 import utils
-import neural_network
 import numpy as np
+from alpha_zero import ConstructDenseNetwork
 
-def MinMax(board, last_row, last_col, turn, answer):
+def MinMax(board, last_row, last_col, turn, ply_count, answer):
     position_str = str(utils.Flatten(board))
 
-    result = utils.GameWon(board, last_row, last_col, 3)
-    if result:
+    result = utils.GameResult(board, last_row, last_col, 3, ply_count)
+    if result is not None:
         answer[position_str] = result
         return result * turn
 
@@ -21,7 +21,7 @@ def MinMax(board, last_row, last_col, turn, answer):
     score = -1
     for row, col in moves:
         board[row][col] = turn
-        move_score = -MinMax(board, row, col, -turn, answer)
+        move_score = -MinMax(board, row, col, -turn, ply_count + 1, answer)
         score = max(score, move_score)
         board[row][col] = 0
         
@@ -31,7 +31,7 @@ def MinMax(board, last_row, last_col, turn, answer):
 def Solve3By3():
     board = [[0,0,0],[0,0,0],[0,0,0]]
     answer = {}
-    MinMax(board, -1, -1, -1, answer)
+    MinMax(board, -1, -1, -1, 0, answer)
     X = []
     y = []
     for position_str, score in answer.items():
@@ -41,8 +41,8 @@ def Solve3By3():
 
 def TrainOptimal3By3Network():
     X, y = Solve3By3()
-    network = neural_network.ConstructDenseNetwork(3, 3)
-    network.fit(np.array(X]), np.array(y),
+    network = ConstructDenseNetwork(3, 3)
+    network.fit(np.array(X), np.array(y),
                 validation_split = 0.2, batch_size=10, epochs=200)
     network.save("data/optimal_3_by_3_network")
     return network

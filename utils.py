@@ -1,4 +1,4 @@
-import itertools
+from itertools import product
 import numpy as np
 
 MY_TURN = -1
@@ -10,17 +10,7 @@ def InitialBoard(rows_count, cols_count):
 
 def Flatten(board):
     arr = np.array(board)
-    #return np.array([arr == -1, arr == 0, arr == 1]).tolist()
     return np.ndarray.flatten(np.array(board)).tolist()
-
-def BestMove(board, network, turn, moves):
-    X = []
-    for row, col in moves:
-        board[row][col] = turn
-        X.append(Flatten(board))
-        board[row][col] = EMPTY
-    y = network.predict(X) * turn
-    return moves[np.argmax(y)]
 
 def PlyCount(board):
     count = 0
@@ -57,7 +47,7 @@ def ConsecutiveCount(board, row, col):
 
 def AvailableMoves(board):
     moves = []
-    for row, col in itertools.product(range(len(board)), range(len(board[0]))):
+    for row, col in product(range(len(board)), range(len(board[0]))):
         if board[row][col] == EMPTY:
             moves.append((row, col))
     return moves
@@ -75,27 +65,19 @@ def AdjacentCount(board, row, col):
 
 def CandidateMoves(board, turn = None, k = None):
     moves = []
-    for row in range(len(board)):
-        for col in range(len(board[0])):
-            if board[row][col] == EMPTY and AdjacentCount(board, row, col):
-                if turn is not None:
-                    board[row][col] = turn
-                    count = ConsecutiveCount(board, row, col)
-                    board[row][col] = EMPTY
-                    if (k is not None and count == k):
-                        return [(row, col)]
-                moves.append((row, col))
+    for row, col in product(range(len(board)), range(len(board[0]))):
+        if board[row][col] == EMPTY and AdjacentCount(board, row, col):
+            if turn is not None:
+                board[row][col] = turn
+                count = ConsecutiveCount(board, row, col)
+                board[row][col] = EMPTY
+                if (k is not None and count == k):
+                    return [(row, col)]
+            moves.append((row, col))
     if not moves:
         moves.append((len(board) // 2, len(board[0]) // 2))
     return moves
                 
-
-# returns -1 if I won, 0 if game continues, 1 if opponent won
-def GameWon(board, last_row, last_col, k):
-    if last_row == -1:
-        return 0
-    return (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
-
 def GameResult(board, last_row, last_col, k, ply_count):
     if last_row == -1:
         return None

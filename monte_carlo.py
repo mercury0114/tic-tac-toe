@@ -68,7 +68,7 @@ class MonteCarloOpponent:
             board[row][col] = turn
             board_str = str(board)
             board[row][col] = EMPTY
-            N = 1 if board_str not in self.N else self.N[board_str]
+            N = 1 if board_str not in self.N else self.N[board_str] * self.N[board_str]
             weights.append(N)
         row, col = choices(moves, weights=weights)[0]
         return row, col

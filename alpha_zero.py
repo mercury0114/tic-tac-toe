@@ -3,7 +3,7 @@ from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping
 from position_evaluators import NeuralNetworkEvaluator
 from monte_carlo import MonteCarloOpponent
-from utils import CandidateMoves, Flatten, GameEnded, InitialBoard, ConvertToTrainingData
+from utils import CandidateMoves, Flatten, GameResult, InitialBoard, ConvertToTrainingData
 from utils import PlyCount
 from utils import EMPTY, MY_TURN, OPPONENT_TURN
 from math import log, sqrt
@@ -13,8 +13,8 @@ from copy import deepcopy
 from time import time
 
 TRAIN_ITERATIONS_COUNT = 20
-EPISODES_COUNT = 60
-SIMULATION_COUNT = 300
+EPISODES_COUNT = 1000
+SIMULATION_COUNT = 100
 
 def ConstructDenseNetwork(rows_count, cols_count):
     network = Sequential()
@@ -41,7 +41,7 @@ def PlayOneGame(players, rows_count, cols_count, k):
         board[last_row][last_col] = turn
         turn = -turn
         ply_count += 1
-        result = GameEnded(board, last_row, last_col, k, ply_count)
+        result = GameResult(board, last_row, last_col, k, ply_count)
     return result
 
 def EvaluatesBetter(new_evaluator, current_evaluator, rows_count, cols_count, k):
@@ -76,7 +76,7 @@ def ExecuteEpisode(mcts):
         board[row][col] = turn
         turn = -turn
         ply_count += 1
-        result = GameEnded(board, row, col, mcts.k, ply_count)
+        result = GameResult(board, row, col, mcts.k, ply_count)
     print("Result after {} plies: {}".format(ply_count, result))
     return X, result
 
