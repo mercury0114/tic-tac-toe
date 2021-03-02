@@ -28,6 +28,27 @@ def UpdateStatistics(game, counts, scores, score):
         scores.setdefault(position_str, 0)
         scores[position_str] += score
 
+
+class RandomGamePredictor:
+    def __init__(self, k):
+        self.k = k
+
+    def predict(position, last_row, last_col, ply_count):
+        board = deepcopy(position)
+        moves = AvailableMoves(position)
+        shuffle(moves)
+        index = 0
+        result = GameEnded(board, last_row, last_col, self.k, ply_count)
+        turn = MY_TURN if ply_count % 2 == 0 else OPPONENT_TURN
+        while result is None:
+            last_row, last_col = moves[index]
+            board[last_row][last_col] = turn
+            turn = -turn
+            ply_count += 1
+            index += 1
+            result = GameEnded(board, last_row, last_col, self.k, ply_count)
+        return result
+
 class MonteCarloOpponent:
     def __init__(self, rows_count, cols_count, k, simulation_count):
         self.rows_count, self.cols_count = rows_count, cols_count

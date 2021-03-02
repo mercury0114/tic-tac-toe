@@ -51,7 +51,7 @@ class NeuralNetworkPredictor:
     def __init__(self, network):
         self.network = network
 
-    def predict(board):
+    def predict(self, board, last_row, last_col, ply_count):
         return self.network.predict([Flatten(board)])
 
 class MonteCarloTreeSearch:
@@ -72,7 +72,7 @@ class MonteCarloTreeSearch:
         
         initial_board_str = str(board)
         if initial_board_str not in self.Q:
-            self.Q[initial_board_str] = self.predictor.predict(board)
+            self.Q[initial_board_str] = self.predictor.predict(board, last_row, last_col, ply_count)
             self.N[initial_board_str] = 1 
             return self.Q[initial_board_str]
 

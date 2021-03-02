@@ -2,7 +2,8 @@
 import tic_tac_game
 import sys
 #from neural_network import NeuralNetworkOpponent
-from monte_carlo import MonteCarloOpponent
+from monte_carlo import RandomGamePredictor
+from alpha_zero import MonteCarloTreeSearch
 
 def PrintUsageAndExit():
     print("python3 main.py [ROWS_COUNT] [COLS_COUNT] [K]")
@@ -29,6 +30,6 @@ if (len(sys.argv) > 4):
 #opponent = alpha_beta_opponent.AlphaBetaOpponent(K)
 #opponent = NeuralNetworkOpponent(ROWS_COUNT, COLS_COUNT, "data/final_network")
 #opponent = NeuralNetworkOpponent(ROWS_COUNT, COLS_COUNT, "data/optimal_3_by_3_network")
-opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, 1000)
+opponent = MonteCarloTreeSearch(ROWS_COUNT, COLS_COUNT, K, 1000, RandomGamePredictor(K))
 game = tic_tac_game.Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()
