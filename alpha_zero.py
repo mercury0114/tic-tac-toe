@@ -1,3 +1,4 @@
+from position_evaluators import NeuralNetworkEvaluator
 from neural_network import ConstructDenseNetwork, ScoreMoves
 from monte_carlo import MonteCarloOpponent
 from utils import CandidateMoves, Flatten, GameEnded, InitialBoard, ConvertToTrainingData
@@ -47,13 +48,6 @@ def EvaluatesBetter(new_evaluator, current_evaluator, rows_count, cols_count, k)
     print("Final score: ", score)
     return score / EPISODES_COUNT >= 0.06
 
-
-class NeuralNetworkEvaluator:
-    def __init__(self, network):
-        self.network = network
-
-    def evaluate(self, board, last_row, last_col, ply_count):
-        return self.network.predict([Flatten(board)])
 
 def ExecuteEpisode(mcts):
     X = []
