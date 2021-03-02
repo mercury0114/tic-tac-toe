@@ -1,5 +1,7 @@
+from keras.layers import Dense, Flatten, Conv2D, Dropout
+from keras.models import Sequential, load_model
+from keras.callbacks import EarlyStopping
 from position_evaluators import NeuralNetworkEvaluator
-from neural_network import ConstructDenseNetwork, ScoreMoves
 from monte_carlo import MonteCarloOpponent
 from utils import CandidateMoves, Flatten, GameEnded, InitialBoard, ConvertToTrainingData
 from utils import PlyCount
@@ -13,6 +15,19 @@ from time import time
 TRAIN_ITERATIONS_COUNT = 20
 EPISODES_COUNT = 60
 SIMULATION_COUNT = 300
+
+def ConstructDenseNetwork(rows_count, cols_count):
+    network = Sequential()
+    network.add(Dense(rows_count * cols_count * 8, activation = "relu",
+                        input_dim = rows_count * cols_count))
+    network.add(Dense(rows_count * cols_count * 4, activation = "relu"))
+    network.add(Dropout(0.2))
+    network.add(Dense(rows_count * cols_count * 2, activation = "relu"))
+    network.add(Dropout(0.1))
+    network.add(Dense(rows_count * cols_count, activation = "relu"))
+    network.add(Dense(1, activation="tanh"))
+    network.compile(optimizer='adam', loss='mse', metrics=['mse'])
+    return network
 
 def PlayOneGame(players, rows_count, cols_count, k):
     board = InitialBoard(rows_count, cols_count)
