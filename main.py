@@ -14,20 +14,15 @@ COLS_COUNT = 15
 K = 5
 
 # Parsing command line arguments
-if len(sys.argv) == 2:
+l = len(sys.argv)
+if l == 2 or l == 3 or l > 4:
     PrintUsageAndExit()
-if len(sys.argv) >= 3:
+if l == 4:
     ROWS_COUNT = int(sys.argv[1])
     COLS_COUNT = int(sys.argv[2])
-if (len(sys.argv) == 4):
     K = int(sys.argv[3])
-if (len(sys.argv) > 4):
-    PrintUsageAndExit()
 
 # Starting the game
-#opponent = alpha_beta_opponent.AlphaBetaOpponent(K)
-#opponent = NeuralNetworkOpponent(ROWS_COUNT, COLS_COUNT, "data/final_network")
-#opponent = NeuralNetworkOpponent(ROWS_COUNT, COLS_COUNT, "data/optimal_3_by_3_network")
 opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, RandomGameEvaluator(K), 10000)
 game = Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()

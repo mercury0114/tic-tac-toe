@@ -96,7 +96,7 @@ def GameWon(board, last_row, last_col, k):
         return 0
     return (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
 
-def GameEnded(board, last_row, last_col, k, ply_count):
+def GameResult(board, last_row, last_col, k, ply_count):
     if last_row == -1:
         return None
     score = (ConsecutiveCount(board, last_row, last_col) == k) * board[last_row][last_col]
