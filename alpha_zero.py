@@ -9,8 +9,8 @@ from copy import deepcopy
 from time import time
 
 TRAIN_ITERATIONS_COUNT = 20
-EPISODES_COUNT = 80
-SIMULATION_COUNT = 1000
+EPISODES_COUNT = 60
+SIMULATION_COUNT = 300
 
 def PlayOneGame(players, rows_count, cols_count, k):
     board = InitialBoard(rows_count, cols_count)
@@ -35,11 +35,13 @@ def PlaysBetter(new_network, best_network, rows_count, cols_count, k):
     
     players = {MY_TURN : new_player, OPPONENT_TURN : best_player}
     for game_nr in range(EPISODES_COUNT // 2):
+        print("white game {} score so far {}".format(game_nr, score))
         score += MY_TURN * PlayOneGame(players, rows_count, cols_count, k)
     new_player.clear_tables()
     best_player.clear_tables()
     players = {MY_TURN : best_player, OPPONENT_TURN : new_player}
     for game_nr in range(EPISODES_COUNT // 2):
+        print("black game {} score so far {}".format(game_nr, score))
         score += OPPONENT_TURN * PlayOneGame(players, rows_count, cols_count, k)
     print("Final score: ", score)
     return score >= 5
@@ -122,15 +124,14 @@ def ExecuteEpisode(mcts):
     while result is None:
         X.append(Flatten(board))
         row, col = mcts.find_move(board)
-        print("New move: ", row, col)
         board[row][col] = turn
         turn = -turn
         ply_count += 1
         result = GameEnded(board, row, col, mcts.k, ply_count)
-    print("Game result: ", result)
+    print("Result after {} plies: {}".format(ply_count, result))
     return X, result
 
-def SimulateMoreTrainingData(mcts, counts, rewards):
+def GatherMoreTrainingData(mcts, counts, rewards):
     for episode in range(EPISODES_COUNT):
         print("Episode: ", episode)
         start_time = time()
@@ -150,7 +151,7 @@ def TrainNetwork(rows_count, cols_count, k):
     for train_iteration in range(TRAIN_ITERATIONS_COUNT):
         print("Train iteration: ", train_iteration)
         mcts = MonteCarloTreeSearch(rows_count, cols_count, k, best_network)
-        X, y = SimulateMoreTrainingData(mcts, counts, rewards)
+        X, y = GatherMoreTrainingData(mcts, counts, rewards)
         new_network = ConstructDenseNetwork(rows_count, cols_count)
         new_network.fit(X, y, epochs=200, validation_split=0.2)
         if PlaysBetter(new_network, best_network, rows_count, cols_count, k):
