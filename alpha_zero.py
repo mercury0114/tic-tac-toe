@@ -1,5 +1,5 @@
 from neural_network import ConstructDenseNetwork, ScoreMoves
-from monte_carlo import MonteCarloTreeSearch
+from monte_carlo import MonteCarloOpponent
 from utils import CandidateMoves, Flatten, GameEnded, InitialBoard, ConvertToTrainingData
 from utils import PlyCount
 from utils import EMPTY, MY_TURN, OPPONENT_TURN
@@ -28,31 +28,31 @@ def PlayOneGame(players, rows_count, cols_count, k):
         result = GameEnded(board, last_row, last_col, k, ply_count)
     return result
 
-def PlaysBetter(new_network, best_network, rows_count, cols_count, k):
-    print("Checking who plays better")
+def EvaluatesBetter(new_evaluator, current_evaluator, rows_count, cols_count, k):
+    print("Checking who evaluates positions better")
     score = 0
-    new_player = MonteCarloOpponent(rows_count, cols_count, k, NeuralNetworkPredictor(new_network))
-    best_player = MonteCarloOpponent(rows_count, cols_count, k, NeuralNetworkPredictor(best_network))
+    new_player = MonteCarloOpponent(rows_count, cols_count, k, new_evaluator, SIMULATION_COUNT)
+    best_player = MonteCarloOpponent(rows_count, cols_count, k, current_evaluator, SIMULATION_COUNT)
     
     players = {MY_TURN : new_player, OPPONENT_TURN : best_player}
     for game_nr in range(EPISODES_COUNT // 2):
-        print("white game {} score so far {}".format(game_nr, score))
+        print("white game nr: {},  score so far: {}".format(game_nr, score))
         score += MY_TURN * PlayOneGame(players, rows_count, cols_count, k)
     new_player.clear_tables()
     best_player.clear_tables()
     players = {MY_TURN : best_player, OPPONENT_TURN : new_player}
     for game_nr in range(EPISODES_COUNT // 2):
-        print("black game {} score so far {}".format(game_nr, score))
+        print("black game nr: {}, score so far: {}".format(game_nr, score))
         score += OPPONENT_TURN * PlayOneGame(players, rows_count, cols_count, k)
     print("Final score: ", score)
     return score / EPISODES_COUNT >= 0.06
 
 
-class NeuralNetworkPredictor:
+class NeuralNetworkEvaluator:
     def __init__(self, network):
         self.network = network
 
-    def predict(self, board, last_row, last_col, ply_count):
+    def evaluate(self, board, last_row, last_col, ply_count):
         return self.network.predict([Flatten(board)])
 
 def ExecuteEpisode(mcts):
@@ -71,7 +71,7 @@ def ExecuteEpisode(mcts):
     print("Result after {} plies: {}".format(ply_count, result))
     return X, result
 
-def GatherMoreTrainingData(mcts, counts, rewards):
+def UpdateTrainingDataFromEpisodes(mcts, counts, rewards):
     for episode in range(EPISODES_COUNT):
         print("Episode: ", episode)
         start_time = time()
@@ -86,17 +86,18 @@ def GatherMoreTrainingData(mcts, counts, rewards):
     return ConvertToTrainingData(counts, rewards)
 
 def TrainNetwork(rows_count, cols_count, k):
-    predictor = NeuralNetworkPredictor(ConstructDenseNetwork(rows_count, cols_count))
+    current_evaluator = NeuralNetworkEvaluator(ConstructDenseNetwork(rows_count, cols_count))
     counts, rewards = {}, {}
     for train_iteration in range(TRAIN_ITERATIONS_COUNT):
         print("Train iteration: ", train_iteration)
-        monte_carlo = MonteCarloOpponent(rows_count, cols_count, k, predictor)
-        X, y = GatherMoreTrainingData(monte_carlo, counts, rewards)
-        new_network = ConstructDenseNetwork(rows_count, cols_count)
-        new_network.fit(X, y, epochs=200, validation_split=0.2)
-        if PlaysBetter(new_network, predictor.network, rows_count, cols_count, k):
-            print("Plays better")
-            predictor.network = new_network
-    best_network.save("data/final_network")
-    return best_network
+        monte_carlo = MonteCarloOpponent(rows_count, cols_count, k, \
+                current_evaluator, SIMULATION_COUNT)
+        X, y = UpdateTrainingDataFromEpisodes(monte_carlo, counts, rewards)
+        new_evaluator = NeuralNetworkEvaluator(ConstructDenseNetwork(rows_count, cols_count))
+        new_evaluator.network.fit(X, y, epochs=200, validation_split=0.2)
+        if EvaluatesBetter(new_evaluator, current_evaluator, rows_count, cols_count, k):
+            print("Evaluates better")
+            current_evaluator.network = new_evaluator.network
+    current_evaluator.network.save("data/final_network")
+    return current_evaluator.network
         

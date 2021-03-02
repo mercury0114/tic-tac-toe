@@ -7,11 +7,15 @@ from random import choices, shuffle
 from time import time
 from numpy import argmax
 
-class RandomGamePredictor:
+class ConstantEvaluator:
+    def evaluate(self, position, last_row, last_col, ply_count):
+        return 0
+
+class RandomGameEvaluator:
     def __init__(self, k):
         self.k = k
 
-    def predict(self, position, last_row, last_col, ply_count):
+    def evaluate(self, position, last_row, last_col, ply_count):
         board = deepcopy(position)
         moves = AvailableMoves(position)
         shuffle(moves)
@@ -28,9 +32,9 @@ class RandomGamePredictor:
         return result
 
 class MonteCarloOpponent:
-    def __init__(self, rows_count, cols_count, k, predictor, simulation_count):
+    def __init__(self, rows_count, cols_count, k, evaluator, simulation_count):
         self.rows_count, self.cols_count, self.k = rows_count, cols_count, k
-        self.predictor, self.simulation_count = predictor, simulation_count
+        self.evaluator, self.simulation_count = evaluator, simulation_count
         self.Q, self.N = {}, {}
 
     def clear_tables(self):
@@ -57,7 +61,7 @@ class MonteCarloOpponent:
         
         initial_board_str = str(board)
         if initial_board_str not in self.Q:
-            self.Q[initial_board_str] = self.predictor.predict(board, last_row, last_col, ply_count)
+            self.Q[initial_board_str] = self.evaluator.evaluate(board, last_row, last_col, ply_count)
             self.N[initial_board_str] = 1 
             return self.Q[initial_board_str]
 
