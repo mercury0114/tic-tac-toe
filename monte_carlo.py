@@ -1,11 +1,8 @@
 from copy import deepcopy
-from utils import AvailableMoves, CandidateMoves
-from utils import Flatten, PlyCount, GameResult
+from utils import CandidateMoves, PlyCount, GameResult
 from utils import MY_TURN, OPPONENT_TURN, EMPTY
 from math import log, sqrt
-from random import choice, choices, shuffle
-from time import time
-from numpy import argmax
+from random import choices
 
 class MonteCarloOpponent:
     def __init__(self, rows_count, cols_count, k, evaluator, simulation_count):
@@ -58,17 +55,17 @@ class MonteCarloOpponent:
         if len(moves) == 1:
             return moves[0]
 
-        for iteration in range(self.simulation_count):
+        for simulation in range(self.simulation_count):
             self.run_simulation(deepcopy(board), -1, -1, turn, ply_count)
             if window:
-                window.title("Please wait, {}/{} checked".format(iteration+1, self.simulation_count))
+                window.title("Please wait, {}/{} checked".format(simulation+1, self.simulation_count))
        
         weights = []
         for row, col in moves:
             board[row][col] = turn
             board_str = str(board)
             board[row][col] = EMPTY
-            N = 1 if board_str not in self.N else self.N[board_str] * self.N[board_str]
-            weights.append(N)
+            w = 1 if board_str not in self.N else self.N[board_str] * self.N[board_str]
+            weights.append(w)
         row, col = choices(moves, weights=weights)[0]
         return row, col

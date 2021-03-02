@@ -11,17 +11,15 @@ class AlphaBetaOpponent:
 
     def candidate_moves(self, board, turn):
         moves = []
-        for row, col in CandidateMoves(board):
-            adjacent_count = AdjacentCount(board, row, col)
-            if adjacent_count:
-                board[row][col] = turn
-                consecutive_count = ConsecutiveCount(board, row, col)
-                board[row][col] = -turn
-                block_count = ConsecutiveCount(board, row, col)
-                board[row][col] = EMPTY
-                score = WIN_SCORE if consecutive_count == self.k else \
-                    block_count ** 3 + consecutive_count ** 2
-                moves.append((score, row, col))
+        for row, col in CandidateMoves(board, turn, self.k):
+            board[row][col] = turn
+            consecutive_count = ConsecutiveCount(board, row, col)
+            board[row][col] = -turn
+            block_count = ConsecutiveCount(board, row, col)
+            board[row][col] = EMPTY
+            score = WIN_SCORE if consecutive_count == self.k else \
+                block_count ** 3 + consecutive_count ** 2
+            moves.append((score, row, col))
         moves.sort(reverse=True)            
         return [(row,col) for (_, row, col) in moves][:BREADTH]
 

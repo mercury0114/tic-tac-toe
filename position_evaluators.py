@@ -1,6 +1,6 @@
 from copy import deepcopy
 from random import shuffle
-from utils import Flatten, GameResult, AvailableMoves
+from utils import ToVector, GameResult, AvailableMoves
 from utils import MY_TURN, OPPONENT_TURN
 
 class ConstantEvaluator:
@@ -32,4 +32,4 @@ class NeuralNetworkEvaluator:
         self.network = network
 
     def evaluate(self, board, last_row, last_col, ply_count):
-        return self.network.predict([Flatten(board)])
+        return self.network.predict([ToVector(board)])

@@ -1,33 +1,13 @@
-from keras.layers import Dense, Flatten, Conv2D, Dropout
-from keras.models import Sequential, load_model
-from keras.callbacks import EarlyStopping
+from neural_network import ConstructDenseNetwork
 from position_evaluators import NeuralNetworkEvaluator
 from monte_carlo import MonteCarloOpponent
-from utils import CandidateMoves, Flatten, GameResult, InitialBoard, ConvertToTrainingData
-from utils import PlyCount
-from utils import EMPTY, MY_TURN, OPPONENT_TURN
-from math import log, sqrt
-from numpy import argmax, float64
-from random import choices
-from copy import deepcopy
+from utils import ToVector, GameResult, InitialBoard, ConvertToTrainingData
+from utils import MY_TURN, OPPONENT_TURN
 from time import time
 
 TRAIN_ITERATIONS_COUNT = 20
 EPISODES_COUNT = 1000
 SIMULATION_COUNT = 100
-
-def ConstructDenseNetwork(rows_count, cols_count):
-    network = Sequential()
-    network.add(Dense(rows_count * cols_count * 8, activation = "relu",
-                        input_dim = rows_count * cols_count))
-    network.add(Dense(rows_count * cols_count * 4, activation = "relu"))
-    network.add(Dropout(0.2))
-    network.add(Dense(rows_count * cols_count * 2, activation = "relu"))
-    network.add(Dropout(0.1))
-    network.add(Dense(rows_count * cols_count, activation = "relu"))
-    network.add(Dense(1, activation="tanh"))
-    network.compile(optimizer='adam', loss='mse', metrics=['mse'])
-    return network
 
 def PlayOneGame(players, rows_count, cols_count, k):
     board = InitialBoard(rows_count, cols_count)
@@ -71,7 +51,7 @@ def ExecuteEpisode(mcts):
     ply_count = 0
     result = None
     while result is None:
-        X.append(Flatten(board))
+        X.append(ToVector(board))
         row, col = mcts.find_move(board)
         board[row][col] = turn
         turn = -turn

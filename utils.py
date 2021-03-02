@@ -8,7 +8,7 @@ EMPTY = 0
 def InitialBoard(rows_count, cols_count):
     return [[0 for _ in range(rows_count)] for _ in range(cols_count)]
 
-def Flatten(board):
+def ToVector(board):
     arr = np.array(board)
     return np.ndarray.flatten(np.array(board)).tolist()
 

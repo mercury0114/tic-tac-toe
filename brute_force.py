@@ -1,9 +1,9 @@
 import utils
 import numpy as np
-from alpha_zero import ConstructDenseNetwork
+from neural_network import ConstructDenseNetwork
 
 def MinMax(board, last_row, last_col, turn, ply_count, answer):
-    position_str = str(utils.Flatten(board))
+    position_str = str(utils.ToVector(board))
 
     result = utils.GameResult(board, last_row, last_col, 3, ply_count)
     if result is not None:
