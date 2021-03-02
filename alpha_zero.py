@@ -30,8 +30,8 @@ def PlayOneGame(players, rows_count, cols_count, k):
 def PlaysBetter(new_network, best_network, rows_count, cols_count, k):
     print("Checking who plays better")
     score = 0
-    new_player = MonteCarloTreeSearch(rows_count, cols_count, k, new_network)
-    best_player = MonteCarloTreeSearch(rows_count, cols_count, k, best_network)
+    new_player = MonteCarloTreeSearch(rows_count, cols_count, k, NeuralNetworkPredictor(new_network))
+    best_player = MonteCarloTreeSearch(rows_count, cols_count, k, NeuralNetworkPredictor(best_network))
     
     players = {MY_TURN : new_player, OPPONENT_TURN : best_player}
     for game_nr in range(EPISODES_COUNT // 2):
@@ -44,13 +44,21 @@ def PlaysBetter(new_network, best_network, rows_count, cols_count, k):
         print("black game {} score so far {}".format(game_nr, score))
         score += OPPONENT_TURN * PlayOneGame(players, rows_count, cols_count, k)
     print("Final score: ", score)
-    return score >= 5
+    return score / EPISODES_COUNT >= 0.06
+
+
+class NeuralNetworkPredictor:
+    def __init__(self, network):
+        self.network = network
+
+    def predict(board):
+        return self.network.predict([Flatten(board)])
 
 class MonteCarloTreeSearch:
-    def __init__(self, rows_count, cols_count, k, network):
+    def __init__(self, rows_count, cols_count, k, predictor):
         self.rows_count, self.cols_count = rows_count, cols_count
         self.k = k
-        self.network = network
+        self.predictor = predictor
         self.Q, self.N = {}, {}
 
     def clear_tables(self):
@@ -64,7 +72,7 @@ class MonteCarloTreeSearch:
         
         initial_board_str = str(board)
         if initial_board_str not in self.Q:
-            self.Q[initial_board_str] = self.network.predict([Flatten(board)])
+            self.Q[initial_board_str] = self.predictor.predict(board)
             self.N[initial_board_str] = 1 
             return self.Q[initial_board_str]
 
@@ -146,17 +154,17 @@ def GatherMoreTrainingData(mcts, counts, rewards):
     return ConvertToTrainingData(counts, rewards)
 
 def TrainNetwork(rows_count, cols_count, k):
-    best_network = ConstructDenseNetwork(rows_count, cols_count)
+    predictor = NeuralNetworkPredictor(ConstructDenseNetwork(rows_count, cols_count))
     counts, rewards = {}, {}
     for train_iteration in range(TRAIN_ITERATIONS_COUNT):
         print("Train iteration: ", train_iteration)
-        mcts = MonteCarloTreeSearch(rows_count, cols_count, k, best_network)
+        mcts = MonteCarloTreeSearch(rows_count, cols_count, k, predictor)
         X, y = GatherMoreTrainingData(mcts, counts, rewards)
         new_network = ConstructDenseNetwork(rows_count, cols_count)
         new_network.fit(X, y, epochs=200, validation_split=0.2)
-        if PlaysBetter(new_network, best_network, rows_count, cols_count, k):
+        if PlaysBetter(new_network, predictor.network, rows_count, cols_count, k):
             print("Plays better")
-            best_network = new_network
+            predictor.network = new_network
     best_network.save("data/final_network")
     return best_network
         
