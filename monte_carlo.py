@@ -1,6 +1,6 @@
 from copy import deepcopy
 from utils import AvailableMoves, CandidateMoves
-from utils import Flatten, PlyCount, GameEnded
+from utils import Flatten, PlyCount, GameResult
 from utils import MY_TURN, OPPONENT_TURN, EMPTY
 from math import log, sqrt
 from random import choice, choices, shuffle
@@ -31,9 +31,9 @@ class MonteCarloOpponent:
         return best_row, best_col
 
     def run_simulation(self, board, last_row, last_col, turn, ply_count):
-        score = GameEnded(board, last_row, last_col, self.k, ply_count)
-        if score is not None:
-            return score
+        result = GameResult(board, last_row, last_col, self.k, ply_count)
+        if result is not None:
+            return result
         
         initial_board_str = str(board)
         if initial_board_str not in self.Q:

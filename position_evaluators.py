@@ -1,6 +1,6 @@
 from copy import deepcopy
 from random import shuffle
-from utils import Flatten, GameEnded, AvailableMoves
+from utils import Flatten, GameResult, AvailableMoves
 from utils import MY_TURN, OPPONENT_TURN
 
 class ConstantEvaluator:
@@ -17,14 +17,14 @@ class RandomGameEvaluator:
         moves = AvailableMoves(board)
         shuffle(moves)
         index = 0
-        result = GameEnded(board, last_row, last_col, self.k, ply_count)
+        result = GameResult(board, last_row, last_col, self.k, ply_count)
         while result is None:
             last_row, last_col = moves[index]
             index += 1
             board[last_row][last_col] = turn
             turn = -turn
             ply_count += 1
-            result = GameEnded(board, last_row, last_col, self.k, ply_count)
+            result = GameResult(board, last_row, last_col, self.k, ply_count)
         return result
 
 class NeuralNetworkEvaluator:

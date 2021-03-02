@@ -2,7 +2,7 @@ from tkinter import Tk, Button, LEFT
 import threading
 from time import sleep, time
 from utils import MY_TURN, EMPTY, OPPONENT_TURN
-from utils import InitialBoard, GameWon, PlyCount
+from utils import InitialBoard, GameResult, PlyCount
 
 COLOURS = { MY_TURN : "black", OPPONENT_TURN : "red" }
 TITLES = { MY_TURN : "Your move", OPPONENT_TURN : "Please wait" }
@@ -55,7 +55,7 @@ class Game:
         self.board[row][col] = self.current_turn
         self.last_row, self.last_col = row, col
         self.ply_count += 1
-        self.game_result = GameResult(board, last_row, last_col, self.k, self.ply_count)
+        self.game_result = GameResult(self.board, row, col, self.k, self.ply_count)
         self.current_turn = -self.current_turn
         self.buttons[row * self.rows_count + col].configure(bg=COLOURS[self.current_turn])
 
