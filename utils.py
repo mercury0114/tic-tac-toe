@@ -46,11 +46,8 @@ def ConsecutiveCount(board, row, col):
     return max_count
 
 def AvailableMoves(board):
-    moves = []
-    for row, col in product(range(len(board)), range(len(board[0]))):
-        if board[row][col] == EMPTY:
-            moves.append((row, col))
-    return moves
+    return [(row,col) for row,col in product(range(len(board)), range(len(board[0]))) \
+                if board[row][col] == EMPTY]
 
 def AdjacentCount(board, row, col):
     count = 0
@@ -63,16 +60,15 @@ def AdjacentCount(board, row, col):
             count += 1
     return count
 
-def CandidateMoves(board, turn = None, k = None):
+def CandidateMoves(board, turn, k):
     moves = []
-    for row, col in product(range(len(board)), range(len(board[0]))):
-        if board[row][col] == EMPTY and AdjacentCount(board, row, col):
-            if turn is not None:
-                board[row][col] = turn
-                count = ConsecutiveCount(board, row, col)
-                board[row][col] = EMPTY
-                if (k is not None and count == k):
-                    return [(row, col)]
+    for row, col in AvailableMoves(board):
+        if AdjacentCount(board, row, col):
+            board[row][col] = turn
+            count = ConsecutiveCount(board, row, col)
+            board[row][col] = EMPTY
+            if count == k:
+                return [(row, col)]
             moves.append((row, col))
     if not moves:
         moves.append((len(board) // 2, len(board[0]) // 2))
