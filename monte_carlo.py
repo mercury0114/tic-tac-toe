@@ -15,7 +15,7 @@ class MonteCarloOpponent:
         self.N.clear()
 
     def select_move_with_largest_ucb_score(self, board, turn):
-        N = self.N[str(board)]
+        logN = log(self.N[str(board)])
         ucb_and_moves = []
         for row, col in CandidateMoves(board):
             board[row][col] = turn
@@ -23,7 +23,7 @@ class MonteCarloOpponent:
             board[row][col] = EMPTY
             q = turn if board_str not in self.Q else self.Q[board_str]
             n = 1 if board_str not in self.N else self.N[board_str]
-            ucb_and_moves.append((q * turn + 2 * sqrt(log(N) / n), row, col))
+            ucb_and_moves.append((q * turn + 2 * sqrt(logN / n), row, col))
         _, best_row, best_col = max(ucb_and_moves)
         return best_row, best_col
 

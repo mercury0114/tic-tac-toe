@@ -4,7 +4,7 @@ from time import sleep, time
 from utils import MY_TURN, EMPTY, OPPONENT_TURN
 from utils import InitialBoard, GameResult, PlyCount
 
-COLOURS = { MY_TURN : "black", OPPONENT_TURN : "red" }
+COLOURS = { MY_TURN : "black", EMPTY : "sandy brown", OPPONENT_TURN : "white" }
 TITLES = { MY_TURN : "Your move", OPPONENT_TURN : "Please wait" }
 
 class Game:
@@ -27,6 +27,7 @@ class Game:
                 b = Button(self.window, height=1, width=2,
                         command = lambda row=row, col=col:
                             self.try_make_my_move(row, col))
+                b.configure(bg=COLOURS[EMPTY], activebackground=COLOURS[MY_TURN])
                 b.grid(row = row, column = col)
                 self.buttons.append(b)
 
@@ -55,9 +56,9 @@ class Game:
         self.board[row][col] = self.current_turn
         self.last_row, self.last_col = row, col
         self.ply_count += 1
-        self.game_result = GameResult(self.board, row, col, self.k, self.ply_count)
-        self.current_turn = -self.current_turn
         self.buttons[row * self.rows_count + col].configure(bg=COLOURS[self.current_turn])
+        self.current_turn = -self.current_turn
+        self.game_result = GameResult(self.board, row, col, self.k, self.ply_count)
 
         # updating display message
         if self.game_result == MY_TURN:
