@@ -55,6 +55,7 @@ class MonteCarloOpponent:
         if len(moves) == 1:
             return moves[0]
 
+        self.clear_tables()
         for simulation in range(self.simulation_count):
             self.run_simulation(deepcopy(board), -1, -1, turn, ply_count)
             if window:

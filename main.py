@@ -23,6 +23,6 @@ if l == 4:
     K = int(sys.argv[3])
 
 # Starting the game
-opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, RandomGameEvaluator(K), 50000)
+opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, RandomGameEvaluator(K), 100000)
 game = Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()
