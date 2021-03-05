@@ -36,7 +36,7 @@ class RandomGameEvaluator:
         result = 0
         for _ in range(self.evaluation_count):
             result += self.evaluate_playing_randomly(position, last_row, last_col, ply_count)
-        return result, simulation_count
+        return result, self.evaluation_count
 
 class NeuralNetworkEvaluator:
     def __init__(self, network):
