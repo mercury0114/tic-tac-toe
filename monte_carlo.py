@@ -22,7 +22,7 @@ class MonteCarloOpponent:
             board[row][col] = turn
             board_str = str(board)
             board[row][col] = EMPTY
-            q = turn if board_str not in self.Q else self.Q[board_str]
+            q = 0 if board_str not in self.Q else self.Q[board_str]
             n = 1 if board_str not in self.N else self.N[board_str]
             ucb_and_moves.append((q * turn / n + 2 * sqrt(logN / n), row, col))
         _, best_row, best_col = max(ucb_and_moves)
@@ -38,14 +38,14 @@ class MonteCarloOpponent:
             board[row][col] = turn
             turn, ply_count = -turn, ply_count + 1
             result = GameResult(board, row, col, self.k, ply_count)
+        n = 1
         if result is None:
-            result = self.evaluator.evaluate(board, row, col, ply_count)
+            result, n = self.evaluator.evaluate(board, row, col, ply_count)
             board_str = str(board)
-            self.N[board_str] = 1
-            self.Q[board_str] = result
+            self.Q[board_str], self.N[board_str] = result, n
         for board_str in history:
-            self.N[board_str] += 1
             self.Q[board_str] += result
+            self.N[board_str] += n
 
     def find_move(self, board, window = None):
         ply_count = PlyCount(board)
