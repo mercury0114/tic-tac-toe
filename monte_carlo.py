@@ -55,8 +55,6 @@ class MonteCarloOpponent:
         if len(moves) == 1:
             return moves[0]
 
-        # TODO(mariusl): check whether clearing tables helps or hurts
-        self.clear_tables()
         for simulation in range(self.simulation_count):
             self.run_simulation(deepcopy(board), turn, ply_count)
             if window:
