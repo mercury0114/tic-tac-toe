@@ -42,7 +42,9 @@ class Game:
             if (self.current_turn == MY_TURN or self.game_result is not None):
                 sleep(0.5)
                 continue
+            start_time = time()
             opponents_row, opponents_col = self.opponent.find_move(self.board, self.window)
+            print("Found move in {} seconds".format(time() - start_time))
             self.make_move(opponents_row, opponents_col)
 
     # doesn't change the board state if the move is illegal or the game has ended

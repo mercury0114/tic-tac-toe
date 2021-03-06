@@ -1,4 +1,5 @@
 from itertools import product
+from numba import jit
 import numpy as np
 
 MY_TURN = -1
@@ -6,6 +7,7 @@ OPPONENT_TURN = 1
 EMPTY = 0
 
 def InitialBoard(rows_count, cols_count):
+    #return np.zeros((rows_count, cols_count))
     return [[0 for _ in range(rows_count)] for _ in range(cols_count)]
 
 def ToVector(board):
@@ -73,7 +75,7 @@ def CandidateMoves(board, turn, k):
     if not moves:
         moves.append((len(board) // 2, len(board[0]) // 2))
     return moves
-                
+ 
 def GameResult(board, last_row, last_col, k, ply_count):
     if last_row == -1:
         return None

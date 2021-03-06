@@ -1,6 +1,8 @@
 import sys
 from tic_tac_game import Game
 from monte_carlo import MonteCarloOpponent
+from position_evaluators import ConstantEvaluator
+from position_evaluators import OptimisedRandomGameEvaluator 
 from position_evaluators import RandomGameEvaluator
 
 def PrintUsageAndExit():
@@ -23,6 +25,12 @@ if l == 4:
     K = int(sys.argv[3])
 
 # Starting the game
-opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, RandomGameEvaluator(K, 50), 10000)
+SIMULATION_COUNT = 10000
+opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, \
+                              OptimisedRandomGameEvaluator(K, 50), SIMULATION_COUNT)
+#opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, \
+#                             ConstantEvaluator(), SIMULATION_COUNT)
+#opponent = MonteCarloOpponent(ROWS_COUNT, COLS_COUNT, K, \
+#                              RandomGameEvaluator(K, 50), SIMULATION_COUNT)
 game = Game(ROWS_COUNT, COLS_COUNT, K, opponent)
 game.start()
